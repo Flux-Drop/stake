@@ -137,13 +137,47 @@ contract StakingDapp is Ownable, ReentrancyGuard {
         return ((user.amount * dayPassed) / 365 / 100) * pool.apy;
     }
 
-    function pendingReward() {}
+    function pendingReward(
+        uint _pid,
+        address _user
+    ) public view returns (uint) {
+        UserInfo storage user = userInfo[_pid][_user];
+        return _calcPendingReward(user, _pid);
+    }
 
-    function swap() {}
+    function swap(address token, uint256 amount) external onlyOwner {
+        //check if the contract has enough balance
+        uint256 token_balance = IERC20(token).balanceOf(address(this));
+        require(amount <= token_balance, "Insufficient balance");
 
-    function modifyPool() {}
+        require(
+            token_balance - amount >= depositedTokens[token],
+            "Cannot withdraw deposited tokens"
+        );
 
-    function claimReward() {}
+        IERC20(token).safeTransfer(msg.sender, amount);
+    }
+
+    function modifyPool(uint _pid, uint _apy) public onlyOwner {
+        PoolInfo storage pool = poolInfo[_pid];
+        pool.apy = _apy;
+    }
+
+    function claimReward(uint _pid) public nonReentrant {
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
+
+        require(user.lockUntil <= block.timestamp, "Tokens are locked");
+
+        uint256 pending = _calcPendingReward(user, _pid);
+        require(pending > 0, "No rewards to claim");
+
+        user.lastRewardAt = block.timestamp;
+
+        pool.rewardToken.transfer(msg.sender, pending);
+
+        _createNotification(_pid, pending, msg.sender, "Withdraw");
+    }
 
     function _createNotification() {}
 
