@@ -58,11 +58,84 @@ contract StakingDapp is Ownable, ReentrancyGuard {
         poolCount++;
     }
 
-    function deposit() {}
+    function deposit(uint _pid, uint _amount) public nonReentrant {
+        //condition
+        require(amount > 0, "Amount must be greater than 0");
 
-    function withdraw() {}
+        //getting pool and user info
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
 
-    function _calcPendingReward() {}
+        //checking if user has already deposited some tokens
+        if (user.amount > 0) {
+            uint pending = _calcPendingReward(user, _pid);
+            pool.rewardToken.transfer(msg.sender, pending);
+
+            _createNotification(_pid, pending, msg.sender, "Claim");
+        }
+
+        //transfer tokens from user to contract
+        pool.depositToken.transferFrom(msg.sender, address(this), _amount);
+
+        pool.depositedAmount += _amount;
+
+        user.amount += _amount;
+        user.lastRewardAt = block.timestamp;
+
+        user.lockUntil = block.timestamp + (pool.lockDays * 60);
+        // user.lockUntil = block.timestamp + (pool.lockDays * 86400);
+
+        depositedTokens[address(pool.depositToken)] += _amount;
+
+        _createNotification(_pid, _amount, msg.sender, "Deposit");
+    }
+
+    function withdraw(uint _pid, uint _amount) public nonReenrant {
+        //getting pool and user info
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
+
+        //checking conditions for withdrawal
+        require(
+            user.amount >= _amount,
+            "Withdraw amount exceeds deposited amount"
+        );
+        require(user.lockUntil <= block.timestamp, "Tokens are locked");
+
+        //calculating pending rewards
+        uint256 pending = _calcPendingReward(user, _pid);
+        if (user.amount > 0) {
+            pool.rewardToken.transfer(msg.sender, pending);
+            _createNotification(_pid, pending, msg.sender, "Claim");
+        }
+
+        if (_amount > 0) {
+            user.amount -= _amount;
+            pool.depositedAmount -= _amount;
+            depositedTokens[address(pool.depositToken)] -= _amount;
+
+            pool.depositToken.transfer(msg.sender, _amount);
+        }
+
+        user.lastRewardAt = block.timestamp;
+        _createNotification(_pid, _amount, msg.sender, "Withdraw");
+    }
+
+    function _calcPendingReward(
+        UserInfo storage user,
+        uint _pid
+    ) internal view returns (uint256) {
+        PoolInfo storage pool = poolInfo[_pid];
+
+        uint dayPassed = (block.timestamp - user.lastRewardAt) / 60;
+        // uint dayPassed = (block.timestamp - user.lastRewardAt) / 86400;
+
+        if (dayPassed > pool.lockDays) {
+            dayPassed = pool.lockDays;
+        }
+
+        return ((user.amount * dayPassed) / 365 / 100) * pool.apy;
+    }
 
     function pendingReward() {}
 
