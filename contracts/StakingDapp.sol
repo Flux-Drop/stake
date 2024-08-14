@@ -176,10 +176,27 @@ contract StakingDapp is Ownable, ReentrancyGuard {
 
         pool.rewardToken.transfer(msg.sender, pending);
 
-        _createNotification(_pid, pending, msg.sender, "Withdraw");
+        _createNotification(_pid, pending, msg.sender, "Claim");
     }
 
-    function _createNotification() {}
+    function _createNotification(
+        uint _pid,
+        uint _amount,
+        address _user,
+        string memory _typeOf
+    ) internal {
+        notifications.push(
+            Notification({
+                poolId: _pid,
+                amount: _amount,
+                user: _user,
+                typeOf: _typeOf,
+                timestamp: block.timestamp
+            })
+        );
+    }
 
-    function getNotifications() {}
+    function getNotifications() public view returns (Notification[] memory) {
+        return notifications;
+    }
 }
