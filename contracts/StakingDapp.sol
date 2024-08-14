@@ -697,7 +697,7 @@ contract StakingDapp is Ownable, ReentrancyGuard {
     function _calcPendingReward(
         UserInfo storage user,
         uint _pid
-    ) internal view returns (uint256) {
+    ) internal view returns (uint) {
         PoolInfo storage pool = poolInfo[_pid];
 
         uint dayPassed = (block.timestamp - user.lastRewardAt) / 60;
