@@ -633,7 +633,7 @@ contract StakingDapp is Ownable, ReentrancyGuard {
 
     function deposit(uint _pid, uint _amount) public nonReentrant {
         //condition
-        require(_amount > 0, "Amount must be greater than 0");
+        require(_amount > 0, "Amount should be greater than 0");
 
         //getting pool and user info
         PoolInfo storage pool = poolInfo[_pid];
