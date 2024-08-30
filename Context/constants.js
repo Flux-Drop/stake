@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
+import CustomTokenABI from "./ERC20.json";
 import StakingDappABI from "./StakingDapp.json";
 import TokenICO from "./TokenICO.json";
-import CustomTokenABI from "./ERC20.json";
 
 //Contract
 const STAKING_DAPP_ADDRESS = process.env.NEXT_PUBLIC_STAKING_DAPP;
@@ -75,5 +75,25 @@ export const ERC20 = async (address, userAddress) => {
       ),
     };
     return token;
+  }
+};
+
+//contract for tokenICO
+
+export const LOAD_TOKEN_ICO = async () => {
+  try {
+    const contract = await TOKEN_ICO_CONTRACT();
+  } catch (error) {}
+};
+
+export const TOKEN_ICO_CONTRACT = async () => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const { ethereum } = window;
+
+  if (ethereum) {
+    const signer = provider.getSigner();
+    const contractReader = new ethers.Contract(TOKEN_ICO, TokenICO.abi, signer);
+
+    return contractReader;
   }
 };
