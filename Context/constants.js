@@ -27,7 +27,7 @@ export const tokenContract = async () => {
 
     const contractReader = new ethers.Contract(
       DEPOSIT_TOKEN,
-      CustomTokenABI,
+      CustomTokenABI.abi,
       signer
     );
 
@@ -41,11 +41,39 @@ export const contract = async () => {
 
   if (ethereum) {
     const signer = provider.getSigner();
+
     const contractReader = new ethers.Contract(
       STAKING_DAPP_ADDRESS,
-      StakingDappABI,
+      StakingDappABI.abi,
       signer
     );
     return contractReader;
+  }
+};
+
+//contract for token
+export const ERC20 = async (address, userAddress) => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const { ethereum } = window;
+
+  if (ethereum) {
+    const signer = provider.getSigner();
+    const contractReader = new ethers.Contract(
+      address,
+      CustomTokenABI.abi,
+      signer
+    );
+
+    const token = {
+      name: await contractReader.name(),
+      symbol: await contractReader.symbol(),
+      address: await contractReader.address,
+      totalSupply: toEth(await contractReader.totalSupply()),
+      balance: toEth(await contractReader.balanceOf(userAddress)),
+      contractTokenBalance: toEth(
+        await contractReader.balanceOf(STAKING_DAPP_ADDRESS)
+      ),
+    };
+    return token;
   }
 };
