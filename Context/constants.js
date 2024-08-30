@@ -17,6 +17,7 @@ export function toEth(amount, decimals) {
   return toEth.toString();
 }
 
+//contract for token
 export const tokenContract = async () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const { ethereum } = window;
@@ -30,6 +31,21 @@ export const tokenContract = async () => {
       signer
     );
 
+    return contractReader;
+  }
+};
+
+export const contract = async () => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const { ethereum } = window;
+
+  if (ethereum) {
+    const signer = provider.getSigner();
+    const contractReader = new ethers.Contract(
+      STAKING_DAPP_ADDRESS,
+      StakingDappABI,
+      signer
+    );
     return contractReader;
   }
 };
