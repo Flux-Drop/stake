@@ -83,7 +83,30 @@ export const ERC20 = async (address, userAddress) => {
 export const LOAD_TOKEN_ICO = async () => {
   try {
     const contract = await TOKEN_ICO_CONTRACT();
-  } catch (error) {}
+    const tokenAddress = await contract.tokenAddress();
+
+    const tokenDetails = await contract.getTokenDetails();
+    const contractOwner = await contract.owner();
+    const soldTokens = await contract.soldTokens();
+
+    const ICO_TOKEN = await TOKEN_ICO_ERC20();
+
+    const token = {
+      tokenBal: ethers.utils.formatEther(tokenDetails.balance.toString()),
+      name: tokenDetails.name,
+      symbol: tokenDetails.symbol,
+      supply: ethers.utils.formatEther(tokenDetails.supply.toString()),
+      tokenPrice: ethers.utils.formatEther(tokenDetails.tokenPrice.toString()),
+      tokenAddr: tokenDetails.tokenAddress,
+      owner: contractOwner.toLowerCase(),
+      soldTokens: soldTokens.toNumber(),
+      token: ICO_TOKEN,
+    };
+
+    return token;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const TOKEN_ICO_CONTRACT = async () => {
