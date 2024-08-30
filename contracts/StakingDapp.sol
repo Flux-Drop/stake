@@ -743,7 +743,7 @@ contract StakingDapp is Ownable, ReentrancyGuard {
         require(user.lockUntil <= block.timestamp, "Tokens are locked");
 
         uint256 pending = _calcPendingReward(user, _pid);
-        require(pending > 0, "No rewards to claim");
+        require(pending > 0, "No rewards available to claim");
 
         user.lastRewardAt = block.timestamp;
 
