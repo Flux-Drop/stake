@@ -40,3 +40,21 @@ function CONVERT_TIMESTAMP_TO_READABLE(timestamp) {
 
   return readableTime;
 }
+
+function toWei(amount) {
+  const toWei = ethers.utils.parseUnits(amount.toString());
+  return toWei.toString();
+}
+
+function parseErrorMsg(error) {
+  const json = JSON.parse(JSON.stringify(error));
+  return json?.reeason || json?.error?.message;
+}
+
+export const SHORTEN_ADDRESS = (address) =>
+  `${address.slice(0, 8)}...${address.slice(-4)}`;
+
+export const copyAddress = (text) => {
+  navigator.clipboard.writeText(text);
+  notifySuccess("Address copied to clipboard");
+};
