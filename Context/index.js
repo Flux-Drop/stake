@@ -141,7 +141,7 @@ export async function CONTRACT_DATA(address) {
     return parseErrorMsg(e);
   }
 }
-export async function DEPOSIT(poolId, amount, address) {
+export async function deposit(poolId, amount, address) {
   try {
     notifySuccess("Calling contract...");
     const contractObj = await contract();
@@ -179,6 +179,25 @@ export async function DEPOSIT(poolId, amount, address) {
     const receipt = await stakeTx.wait();
     notifySuccess("Transaction successful");
     return receipt;
+  } catch (error) {
+    console.log(error);
+    const errorMsg = parseErrorMsg(error);
+    notifyError(parseErrorMsg(errorMsg));
+  }
+}
+
+export async function transferToken(amount, transferAddress) {
+  try {
+    notifySuccess("Calling contract...");
+    const stakingTokenObj = await tokenContract();
+    const transferAmount = ethers.utils.parseEther(amount);
+    const approveTx = await stakingTokenObj.transfer(
+      transferAddress,
+      transferAmount
+    );
+    await approveTx.wait();
+
+    notifySuccess("Transfer successful");
   } catch (error) {
     console.log(error);
     const errorMsg = parseErrorMsg(error);
