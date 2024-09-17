@@ -204,3 +204,29 @@ export async function transferToken(amount, transferAddress) {
     notifyError(parseErrorMsg(errorMsg));
   }
 }
+
+export async function withdraw(poolId, amount) {
+  try {
+    notifySuccess("Calling contract...");
+    const amountInWei = ethers.utils.parseUnits(amount, 18);
+    const contractObj = await contract();
+
+    const gasEstimation = await contractObj.estimateGas.withdraw(
+      Number(poolId),
+      amountInWei
+    );
+
+    const data = await contractObj.withdraw(Number(poolId), amountInWei, {
+      gasLimit: gasEstimation,
+    });
+
+    const receipt = await data.wait();
+
+    notifySuccess("Withdrawing token...");
+    return receipt;
+  } catch (error) {
+    console.log(error);
+    const errorMsg = parseErrorMsg(error);
+    notifyError(parseErrorMsg(errorMsg));
+  }
+}
