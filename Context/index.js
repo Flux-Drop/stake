@@ -145,5 +145,43 @@ export async function DEPOSIT(poolId, amount, address) {
   try {
     notifySuccess("Calling contract...");
     const contractObj = await contract();
-  } catch (error) {}
+    const stakingTokenObj = await tokenContract();
+
+    const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
+
+    const currentAllowance = await stakingTokenObj.allowance(
+      address,
+      contractObj.address
+    );
+
+    if (currentAllowance.lt(amountInWei)) {
+      notifyError("Approving tokens...");
+
+      const approveTx = await stakingTokenObj.approve(
+        contractObj.address,
+        amountInWei
+      );
+      await approveTx.wait();
+
+      console.log("Approved", amountInWei.toString(), "for staking");
+    }
+
+    const gasEstimation = await contractObj.estimateGas.deposit(
+      Number(poolId),
+      amountInWei
+    );
+
+    notifySuccess("Staking token calling");
+    const stakeTx = await contractObj.deposit(Number(poolId), amountInWei, {
+      gasLimit: gasEstimation,
+    });
+
+    const receipt = await stakeTx.wait();
+    notifySuccess("Transaction successful");
+    return receipt;
+  } catch (error) {
+    console.log(error);
+    const errorMsg = parseErrorMsg(error);
+    notifyError(parseErrorMsg(errorMsg));
+  }
 }
