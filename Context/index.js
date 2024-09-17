@@ -135,5 +135,15 @@ export async function CONTRACT_DATA(address) {
 
       return data;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e);
+    console.log(parseErrorMsg(e));
+    return parseErrorMsg(e);
+  }
+}
+export async function DEPOSIT(poolId, amount, address) {
+  try {
+    notifySuccess("Calling contract...");
+    const contractObj = await contract();
+  } catch (error) {}
 }
