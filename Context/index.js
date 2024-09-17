@@ -230,3 +230,26 @@ export async function withdraw(poolId, amount) {
     notifyError(parseErrorMsg(errorMsg));
   }
 }
+
+export async function claimReward(poolId) {
+  try {
+    notifySuccess("Calling contract...");
+    const contractObj = await contract();
+
+    const gasEstimation = await contractObj.estimateGas.claimReward(
+      Number(poolId)
+    );
+
+    const data = await contractObj.claimReward(Number(poolId), amountInWei, {
+      gasLimit: gasEstimation,
+    });
+
+    const recipt = await data.wait();
+    notifySuccess("Reward claimed");
+    return recipt;
+  } catch (error) {
+    console.log(error);
+    const errorMsg = parseErrorMsg(error);
+    notifyError(parseErrorMsg(errorMsg));
+  }
+}
